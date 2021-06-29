@@ -1,6 +1,5 @@
 build_dir  := ./build
 cmake_vars := -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
-run_cmd    := ./tests/test_file
 
 all: configure
 	@cmake --build $(build_dir)
@@ -14,7 +13,7 @@ compile_commands.json:
 	@ln -s $(build_dir)/compile_commands.json
 
 run: all
-	@cd $(build_dir) && $(run_cmd)
+	@cd $(build_dir) && ninja test
 
 clean:
 	@cd $(build_dir) && ninja clean

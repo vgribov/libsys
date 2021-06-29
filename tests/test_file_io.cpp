@@ -17,19 +17,15 @@ constexpr size_t array_size(T (&)[N]) noexcept { return N; }
 
 namespace {
 
+#ifdef __APPLE__
+    constexpr const char* fd_dir = "/dev/fd";
+#else
+    constexpr const char* fd_dir = "/proc/self/fd";
+#endif
+
 auto count_open_fds()
 {
-#ifdef __APPLE__
-    auto* dp = ::opendir("/dev/fd");
-    if (!dp) return -1;
-
-    auto count = 0;
-    while (::readdir(dp)) ++count;
-
-    ::closedir(dp);
-    return count - 3 - 1;
-#else
-    auto* dp = ::opendir("/proc/self/fd");
+    auto* dp = ::opendir(fd_dir);
     if (!dp) return -1;
 
     auto count = 0;
@@ -37,7 +33,6 @@ auto count_open_fds()
 
     ::closedir(dp);
     return count - 3 - 3;
-#endif
 }
 
 } // namespace
