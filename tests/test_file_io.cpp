@@ -15,61 +15,74 @@
 template <typename T, size_t N>
 constexpr size_t array_size(T (&)[N]) noexcept { return N; }
 
-namespace {
+class File : public ::testing::Test
+{
+protected:
 
+    void SetUp() override
+    {
 #ifdef __APPLE__
-    constexpr const char* fd_dir = "/dev/fd";
+        constexpr const char* FD_PATH = "/dev/fd";
 #else
-    constexpr const char* fd_dir = "/proc/self/fd";
+        constexpr const char* FD_PATH = "/proc/self/fd";
 #endif
 
-auto count_open_fds()
-{
-    auto* dp = ::opendir(fd_dir);
-    if (!dp) return -1;
+        fd_dir_ = ::opendir(FD_PATH);
+        if (!fd_dir_) ::perror("opendir");
 
-    auto count = 0;
-    while (::readdir(dp)) ++count;
+        open_fds_base_ = 0;
+        while (::readdir(fd_dir_)) ++open_fds_base_;
+    }
 
-    ::closedir(dp);
-    return count - 3 - 3;
-}
+    void TearDown() override
+    {
+        ::closedir(fd_dir_);
+    }
 
-} // namespace
+    int countOpenFDs()
+    {
+        ::rewinddir(fd_dir_);
+        int count = 0;
+        while (::readdir(fd_dir_)) ++count;
+        return count - open_fds_base_;
+    }
 
+    DIR* fd_dir_;
+    int open_fds_base_;
+};
 
-TEST(File, default_constructor)
+TEST_F(File, default_constructor)
 {
     sys::File f{};
 }
 
-TEST(File, open_close)
+TEST_F(File, open_close)
 {
     sys::File f{};
     f = sys::open("/etc/hosts", O_RDONLY);
-    EXPECT_EQ(count_open_fds(), 1);
+    EXPECT_EQ(countOpenFDs(), 1);
 }
 
-TEST(File, move_assignment)
+TEST_F(File, move_assignment)
 {
     auto f = sys::open("/etc/passwd", O_RDONLY);
-    EXPECT_EQ(count_open_fds(), 1);
+    EXPECT_EQ(countOpenFDs(), 1);
 
     f = sys::open("/etc/group", O_RDONLY);
-    EXPECT_EQ(count_open_fds(), 1);
+    EXPECT_EQ(countOpenFDs(), 1);
 }
 
 
-TEST(File, explicit_close)
+TEST_F(File, explicit_close)
 {
     auto f = sys::open("/etc/hosts", O_RDONLY);
-    EXPECT_EQ(count_open_fds(), 1);
+    EXPECT_EQ(countOpenFDs(), 1);
 
     sys::close(f);
-    EXPECT_EQ(count_open_fds(), 0);
+    EXPECT_EQ(countOpenFDs(), 0);
 }
 
-TEST(File, file_not_exist)
+TEST_F(File, file_not_exist)
 {
     auto cought = false;
 
@@ -82,16 +95,16 @@ TEST(File, file_not_exist)
     }
 
     EXPECT_TRUE(cought);
-    EXPECT_EQ(count_open_fds(), 0);
+    EXPECT_EQ(countOpenFDs(), 0);
 }
 
-TEST(File, creat)
+TEST_F(File, creat)
 {
     auto f = sys::creat("/tmp/pearl", 0644);
-    EXPECT_EQ(count_open_fds(), 1);
+    EXPECT_EQ(countOpenFDs(), 1);
 }
 
-TEST(File, read)
+TEST_F(File, read)
 {
     auto f = sys::open("/dev/zero", O_RDONLY);
 
@@ -123,7 +136,7 @@ TEST(File, read)
     EXPECT_TRUE(cought);
 }
 
-TEST(File, write)
+TEST_F(File, write)
 {
     auto f = sys::open("/dev/null", O_WRONLY);
 
@@ -143,7 +156,7 @@ TEST(File, write)
     EXPECT_TRUE(cought);
 }
 
-TEST(File, read_write)
+TEST_F(File, read_write)
 {
     auto f = sys::open("/tmp/pearl", O_WRONLY | O_TRUNC);
 
@@ -165,7 +178,7 @@ TEST(File, read_write)
     EXPECT_EQ(nr, 0);
 }
 
-TEST(File, fsync)
+TEST_F(File, fsync)
 {
     char tmpl[] = "/tmp/fileXXXXXX";
     auto f = sys::mkstemp(tmpl);
@@ -178,7 +191,7 @@ TEST(File, fsync)
 }
 
 #ifdef HAVE_FDATASYNC
-TEST(File, fdatasync)
+TEST_F(File, fdatasync)
 {
     auto f = sys::open("/tmp", O_WRONLY | O_TMPFILE, 0644);
 
@@ -190,7 +203,7 @@ TEST(File, fdatasync)
 }
 #endif // HAVE_FDATASYNC
 
-TEST(File, lseek)
+TEST_F(File, lseek)
 {
     constexpr off_t size = 1000000;
 
@@ -217,7 +230,7 @@ TEST(File, lseek)
 
 #ifdef HAVE_PREADWRITE
 
-TEST(File, pread_pwrite)
+TEST_F(File, pread_pwrite)
 {
     auto f = sys::open("/tmp/pearl", O_RDWR | O_TRUNC);
 
@@ -243,7 +256,7 @@ TEST(File, pread_pwrite)
 
 #endif // HAVE_PREADWRITE
 
-TEST(File, ftruncate)
+TEST_F(File, ftruncate)
 {
     std::string txt = "Edward Teach was a notorious English pirate.\n"
                       "He was nicknamed Blackbeard.";
@@ -265,7 +278,7 @@ TEST(File, ftruncate)
     EXPECT_EQ(n, 0);
 }
 
-TEST(File, truncate)
+TEST_F(File, truncate)
 {
     std::string txt = "Edward Teach was a notorious English pirate.\n"
                       "He was nicknamed Blackbeard.";
@@ -287,7 +300,7 @@ TEST(File, truncate)
         EXPECT_EQ(txt[i], ibuf[i]);
 }
 
-TEST(File, select)
+TEST_F(File, select)
 {
     sys::File_set readfds;
     readfds.set(sys::STDIN);
@@ -308,7 +321,7 @@ TEST(File, select)
 
 #ifdef HAVE_PSELECT
 
-TEST(File, pselect)
+TEST_F(File, pselect)
 {
     sys::File_set readfds  = {sys::STDIN};
     sys::File_set writefds = {sys::STDOUT};
@@ -323,7 +336,7 @@ TEST(File, pselect)
 
 #endif // HAVE_PSELECT
 
-TEST(File, poll)
+TEST_F(File, poll)
 {
     std::array<sys::Poll_fd, 2> fds = {
         sys::Poll_fd{ sys::STDIN,  POLLIN  },
@@ -338,7 +351,7 @@ TEST(File, poll)
 
 #ifdef HAVE_PPOLL
 
-TEST(File, ppoll)
+TEST_F(File, ppoll)
 {
     std::array<sys::Poll_fd, 2> fds = {
         sys::Poll_fd{ sys::STDIN,  POLLIN  },
