@@ -64,33 +64,40 @@ private:
     }
 };
 
+class Open_error    : public Error {};
+class Creat_error   : public Error {};
+class Mkstemp_error : public Error {};
+class Close_error   : public Error {};
+
 inline void swap(File& lhs, File& rhs) noexcept
     { std::swap(lhs.des_, rhs.des_); }
 
 inline File open(const char* name, int flags)
-    { return File{SYS_INV(open, name, flags)}; }
+    { return File{SYS_INV(::open, Open_error, name, flags)}; }
 
 inline File open(const char* name, int flags, mode_t mode)
-    { return File{SYS_INV(open, name, flags, mode)}; }
+    { return File{SYS_INV(::open, Open_error, name, flags, mode)}; }
 
 inline File creat(const char* name, mode_t mode)
-    { return File{SYS_INV(creat, name, mode)}; }
+    { return File{SYS_INV(::creat, Creat_error, name, mode)}; }
 
 inline File mkstemp(char *tmpl)
-    { return File{SYS_INV(mkstemp, tmpl)}; }
+    { return File{SYS_INV(::mkstemp, Mkstemp_error, tmpl)}; }
 
 inline File mkostemp(char *tmpl, int flags)
-    { return File{SYS_INV(mkostemp, tmpl, flags)}; }
+    { return File{SYS_INV(::mkostemp, Mkstemp_error, tmpl, flags)}; }
 
 inline File mkstemps(char *tmpl, int suffixlen)
-    { return File{SYS_INV(mkstemps, tmpl, suffixlen)}; }
+    { return File{SYS_INV(::mkstemps, Mkstemp_error, tmpl, suffixlen)}; }
 
 inline File mkostemps(char *tmpl, int suffixlen, int flags)
-    { return File{SYS_INV(mkostemps, tmpl, suffixlen, flags)}; }
+    { return File{SYS_INV(::mkostemps, Mkstemp_error, tmpl, suffixlen, flags)}; }
 
 inline void close(File& f)
-    { __invoke("close", [&f]() { return f.close(); } ); }
-
+{
+    auto ret = f.close();
+    if (ret == -1) throw Close_error{};
+}
 
 } // namespace sys
 

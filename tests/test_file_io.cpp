@@ -89,7 +89,7 @@ TEST_F(File, file_not_exist)
     try {
         unlink("/tmp/pearl");
         auto f = sys::open("/tmp/pearl", O_WRONLY | O_TRUNC);
-    } catch (const sys::Error& ex) {
+    } catch (const sys::Open_error& ex) {
         std::cerr << ex.what() << "\n";
         cought = true;
     }
@@ -129,7 +129,7 @@ TEST_F(File, read)
     f = sys::open("/dev/null", O_WRONLY);
     try {
         static_cast<void>(sys::read(f, &word));
-    } catch (const sys::Error& ex) {
+    } catch (const sys::Read_error& ex) {
         cought = true;
         EXPECT_EQ(ex.errnum(), EBADF);
     }
@@ -149,7 +149,7 @@ TEST_F(File, write)
     f = sys::open("/dev/zero", O_RDONLY);
     try {
         static_cast<void>(sys::write(f, &word));
-    } catch (const sys::Error& ex) {
+    } catch (const sys::Write_error& ex) {
         cought = true;
         EXPECT_EQ(ex.errnum(), EBADF);
     }
@@ -221,7 +221,7 @@ TEST_F(File, lseek)
     int ex_cnt{0};
     try {
         sys::lseek(f, -1, -1);
-    } catch (sys::Error &e) {
+    } catch (sys::Seek_error &e) {
         EXPECT_EQ(e.errnum(), EINVAL);
         ++ex_cnt;
     }
