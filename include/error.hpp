@@ -14,18 +14,16 @@ class Error : public std::exception {
 public:
     explicit Error() noexcept
         : errnum_{errno}
-        , desc_{std::strerror(errno)}
         { };
 
     const char *what() const noexcept override
-        { return desc_; }
+        { return std::strerror(errno); }
 
     int errnum() const
         { return errnum_; }
 
 private:
-    int  errnum_;
-    const char *desc_;
+    int errnum_;
 };
 
 template <typename F, typename E, typename... Ts>
@@ -39,6 +37,5 @@ inline auto __invoke(F f, Ts&&... params)
 } // namespace sys
 
 #define SYS_INV(f, E, ...) sys::__invoke<decltype(f), E>(f, __VA_ARGS__)
-
 
 #endif // L4SL694ZCOEI59XOLN1D8ZAP18YA2ZWE0K7SNB6B
