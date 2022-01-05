@@ -22,7 +22,7 @@ target_include_directories(sys INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-target_compile_features(sys INTERFACE cxx_std_14)
+target_compile_features(sys INTERFACE cxx_std_17)
 
 if(PACKAGE_TESTS)
     enable_testing()
