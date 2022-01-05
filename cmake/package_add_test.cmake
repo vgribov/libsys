@@ -6,7 +6,10 @@ macro(package_add_test TESTNAME)
     # link the Google test infrastructure, mocking library, and a default main
     # fuction to the test executable.  Remove g_test_main if writing your own
     # main function.
-    target_link_libraries(${TESTNAME} gtest gmock gtest_main)
+    target_link_libraries (${TESTNAME} gtest gmock gtest_main)
+    target_compile_options(${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_CXX_FLAGS}>")
+    target_link_options   (${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_LINK_FLAGS}>")
+
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more
     # options to pass to it
@@ -20,7 +23,11 @@ endmacro()
 
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRECTORY)
     add_executable(${TESTNAME} ${FILES})
-    target_link_libraries(${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
+
+    target_link_libraries (${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
+    target_compile_options(${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_CXX_FLAGS}>")
+    target_link_options   (${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_LINK_FLAGS}>")
+
     gtest_discover_tests(${TESTNAME}
         WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
     )
