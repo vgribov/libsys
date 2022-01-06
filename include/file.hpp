@@ -12,16 +12,36 @@
 
 namespace sys {
 
+class Open_error    : public Error {};
+class Creat_error   : public Error {};
+class Mkstemp_error : public Error {};
+class Close_error   : public Error {};
+
 class File_des
 {
 public:
-    constexpr explicit File_des(int fd) noexcept : des_{fd} {}
+    constexpr explicit File_des(int fd = -1) noexcept : des_{fd} {}
 
-    constexpr int get() const noexcept { return des_; }
+    constexpr int  get()     const noexcept { return des_; }
+    constexpr int  isValid() const noexcept { return (des_ >= 0); }
 
-protected:
+    friend void swap(File_des&, File_des&) noexcept;
+    friend void close(File_des&);
+
+private:
     int des_;
 };
+
+inline void swap(File_des& lhs, File_des& rhs) noexcept
+    { std::swap(lhs.des_, rhs.des_); }
+
+inline void close(File_des& f)
+{
+    if (!f.isValid()) return;
+    auto ret = ::close(f.get());
+    if (ret == -1) throw Close_error{};
+    f.des_ = -1;
+}
 
 constexpr sys::File_des STDIN {STDIN_FILENO},
                         STDOUT{STDOUT_FILENO},
@@ -30,16 +50,14 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
 class File : public File_des
 {
 public:
-    explicit File() noexcept : File_des{-1} {}
-    ~File() noexcept { close(); }
+    explicit File() noexcept : File_des{-1} { }
+    ~File() { if (isValid()) ::close(get()); }
 
     File(File&) = delete;
     File &operator=(File&) = delete;
 
     File(File&& f) noexcept : File_des{-1} { swap(*this, f); }
     File &operator=(File&& f) noexcept     { swap(*this, f); return *this; }
-
-    friend void swap(File& lhs, File& rhs) noexcept;
 
     friend File open(const char*, int);
     friend File open(const char*, int, mode_t);
@@ -50,27 +68,9 @@ public:
     friend File mkstemps(char*, int);
     friend File mkostemps(char*, int, int);
 
-    friend void close(File&);
-
 private:
     explicit File(int fd) noexcept : File_des{fd} {}
-
-    int close() noexcept
-    {
-        if (des_ == -1) return 0;
-        int ret = ::close(des_);
-        des_ = -1;
-        return ret;
-    }
 };
-
-class Open_error    : public Error {};
-class Creat_error   : public Error {};
-class Mkstemp_error : public Error {};
-class Close_error   : public Error {};
-
-inline void swap(File& lhs, File& rhs) noexcept
-    { std::swap(lhs.des_, rhs.des_); }
 
 inline File open(const char* name, int flags)
     { return File{SYS_INV(::open, Open_error, name, flags)}; }
@@ -92,12 +92,6 @@ inline File mkstemps(char *tmpl, int suffixlen)
 
 inline File mkostemps(char *tmpl, int suffixlen, int flags)
     { return File{SYS_INV(::mkostemps, Mkstemp_error, tmpl, suffixlen, flags)}; }
-
-inline void close(File& f)
-{
-    auto ret = f.close();
-    if (ret == -1) throw Close_error{};
-}
 
 } // namespace sys
 
