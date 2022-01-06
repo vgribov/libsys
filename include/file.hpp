@@ -50,14 +50,14 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
 class File : public File_des
 {
 public:
-    explicit File() noexcept : File_des{-1} { }
-    ~File() { if (isValid()) ::close(get()); }
+    explicit File() noexcept { }
+    ~File()         noexcept { if (isValid()) ::close(get()); }
 
-    File(File&) = delete;
+    File(File&)            = delete;
     File &operator=(File&) = delete;
 
-    File(File&& f) noexcept : File_des{-1} { swap(*this, f); }
-    File &operator=(File&& f) noexcept     { swap(*this, f); return *this; }
+    File(File&& f)            noexcept { swap(*this, f); }
+    File &operator=(File&& f) noexcept { swap(*this, f); return *this; }
 
     friend File open(const char*, int);
     friend File open(const char*, int, mode_t);
