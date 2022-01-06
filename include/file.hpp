@@ -22,8 +22,8 @@ class File_des
 public:
     constexpr explicit File_des(int fd = -1) noexcept : des_{fd} {}
 
-    constexpr int  get()     const noexcept { return des_; }
-    constexpr int  isValid() const noexcept { return (des_ >= 0); }
+    constexpr int get()     const noexcept { return des_; }
+    constexpr int isValid() const noexcept { return (des_ >= 0); }
 
     friend void swap(File_des&, File_des&) noexcept;
     friend void close(File_des&);
@@ -50,8 +50,8 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
 class File : public File_des
 {
 public:
-    explicit File() noexcept { }
-    ~File()         noexcept { if (isValid()) ::close(get()); }
+    explicit File()       noexcept {}
+    explicit File(int fd) noexcept : File_des{fd} {}
 
     File(File&)            = delete;
     File &operator=(File&) = delete;
@@ -59,17 +59,7 @@ public:
     File(File&& f)            noexcept { swap(*this, f); }
     File &operator=(File&& f) noexcept { swap(*this, f); return *this; }
 
-    friend File open(const char*, int);
-    friend File open(const char*, int, mode_t);
-    friend File creat(const char*, mode_t);
-
-    friend File mkstemp(char*);
-    friend File mkostemp(char*, int);
-    friend File mkstemps(char*, int);
-    friend File mkostemps(char*, int, int);
-
-private:
-    explicit File(int fd) noexcept : File_des{fd} {}
+    ~File() noexcept { if (isValid()) ::close(get()); }
 };
 
 inline File open(const char* name, int flags)
