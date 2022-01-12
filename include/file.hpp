@@ -25,7 +25,9 @@ public:
     constexpr int get()     const noexcept { return des_; }
     constexpr int isValid() const noexcept { return (des_ >= 0); }
 
-    friend void swap(File_des&, File_des&) noexcept;
+    void swap(File_des& rhs) noexcept
+        { std::swap(des_, rhs.des_); }
+
     friend void close(File_des&);
 
 private:
@@ -33,7 +35,7 @@ private:
 };
 
 inline void swap(File_des& lhs, File_des& rhs) noexcept
-    { std::swap(lhs.des_, rhs.des_); }
+    { lhs.swap(rhs); }
 
 inline void close(File_des& f)
 {
@@ -53,10 +55,10 @@ public:
     explicit File(int fd) noexcept : File_des{fd} {}
 
     File(File&)            = delete;
-    File &operator=(File&) = delete;
+    File& operator=(File&) = delete;
 
-    File(File&& f)            noexcept { swap(*this, f); }
-    File &operator=(File&& f) noexcept { swap(*this, f); return *this; }
+    File(File&& f)            noexcept { swap(f); }
+    File &operator=(File&& f) noexcept { swap(f); return *this; }
 
     ~File() { if (isValid()) ::close(get()); }
 };
