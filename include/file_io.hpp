@@ -29,9 +29,9 @@ constexpr size_t __elements_left(size_t bytes)
 }
 
 template <typename T>
-inline size_t read(File_des f, T* buf, size_t len = 1)
+inline size_t read(const File_des& f, T* buf, size_t len = 1)
 {
-    auto    cur   = reinterpret_cast<char *>(buf);
+    auto    cur   = reinterpret_cast<char*>(buf);
     size_t  bytes = len * sizeof(T);
     ssize_t ret;
 
@@ -52,7 +52,7 @@ inline size_t read(File_des f, T* buf, size_t len = 1)
 }
 
 template <typename T>
-inline size_t write(File_des f, const T* buf, size_t len = 1)
+inline size_t write(const File_des& f, const T* buf, size_t len = 1)
 {
     auto    cur   = reinterpret_cast<const char *>(buf);
     size_t  bytes = len * sizeof(T);
@@ -74,23 +74,23 @@ inline size_t write(File_des f, const T* buf, size_t len = 1)
     return len - __elements_left<T>(bytes);
 }
 
-inline void fsync(File_des f)
+inline void fsync(const File_des& f)
     { SYS_INV(::fsync, Sync_error, f.get()); }
 
 #ifdef HAVE_FDATASYNC
 
-inline void fdatasync(File_des f)
+inline void fdatasync(const File_des& f)
     { SYS_INV(::fdatasync, Sync_error, f.get()); }
 
 #endif // HAVE_FDATASYNC
 
-inline off_t lseek(File_des f, off_t pos = 0, int origin = SEEK_SET)
+inline off_t lseek(const File_des& f, off_t pos = 0, int origin = SEEK_SET)
     { return SYS_INV(::lseek, Seek_error, f.get(), pos, origin); }
 
 #ifdef HAVE_PREADWRITE
 
 template <typename T>
-inline size_t pread(File_des f, T* buf, size_t count, off_t pos)
+inline size_t pread(const File_des& f, T* buf, size_t count, off_t pos)
 {
     auto    cur   = reinterpret_cast<char *>(buf);
     size_t  bytes = count * sizeof(T);
@@ -114,7 +114,7 @@ inline size_t pread(File_des f, T* buf, size_t count, off_t pos)
 }
 
 template <typename T>
-inline size_t pwrite(File_des f, const T* buf, size_t count, off_t pos)
+inline size_t pwrite(const File_des& f, const T* buf, size_t count, off_t pos)
 {
     auto    cur   = reinterpret_cast<const char*>(buf);
     size_t  bytes = count * sizeof(T);
@@ -139,7 +139,7 @@ inline size_t pwrite(File_des f, const T* buf, size_t count, off_t pos)
 
 #endif // HAVE_PREADWRITE
 
-inline void ftruncate(File_des f, off_t len)
+inline void ftruncate(const File_des& f, off_t len)
     { SYS_INV(::ftruncate, Truncate_error, f.get(), len); }
 
 inline void truncate(const char* path, off_t len)
@@ -148,13 +148,14 @@ inline void truncate(const char* path, off_t len)
 struct File_set : public fd_set
 {
     File_set() { zero(); }
-    File_set(std::initializer_list<File_des> l) : File_set()
-        { for (auto &f : l) set(f); }
+    File_set(std::initializer_list<File_des> l)
+        : File_set()
+        { for (const auto& f : l) set(f); }
 
-    void set(File_des f)    { FD_SET(f.get(), this); }
-    void clr(File_des f)    { FD_CLR(f.get(), this); }
-    bool is_set(File_des f) { return FD_ISSET(f.get(), this) != 0; }
-    void zero()             { FD_ZERO(this); }
+    void set(const File_des& f)    { FD_SET(f.get(), this); }
+    void clr(const File_des& f)    { FD_CLR(f.get(), this); }
+    bool is_set(const File_des& f) { return FD_ISSET(f.get(), this) != 0; }
+    void zero()                    { FD_ZERO(this); }
 };
 
 inline size_t select(size_t n,
@@ -184,7 +185,8 @@ inline size_t pselect(size_t    n,
 
 struct Poll_fd : public pollfd
 {
-    Poll_fd(File_des f, short ev) : pollfd{f.get(), ev, 0}
+    Poll_fd(const File_des &f, short ev)
+        : pollfd{f.get(), ev, 0}
         { };
 };
 
