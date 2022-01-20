@@ -2,9 +2,9 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "debug",
+            "name": "develop",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/debug",
+            "binaryDir": "${sourceDir}/build/develop",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
