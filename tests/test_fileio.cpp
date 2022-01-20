@@ -10,7 +10,7 @@
 
 #include "gtest/gtest.h"
 
-#include "file_io.hpp"
+#include "fileio.hpp"
 
 template <typename T, size_t N>
 constexpr size_t array_size(T (&)[N]) noexcept { return N; }

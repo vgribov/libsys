@@ -7,4 +7,4 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" extern/googletest)
 set(ASAN_CXX_FLAGS  "-O0;-fsanitize=address;-fno-omit-frame-pointer;-fsanitize-address-use-after-scope")
 set(ASAN_LINK_FLAGS "-fsanitize=address")
 
-package_add_test_with_libraries(test_file_io test_file_io.cpp sys "${PROJECT_DIR}")
+package_add_test_with_libraries(test_fileio test_fileio.cpp sys "${PROJECT_DIR}")

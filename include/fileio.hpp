@@ -4,12 +4,13 @@
 #include <poll.h>
 #include <sys/select.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <initializer_list>
 #include <string>
 
-#include "file.hpp"
 #include "config.h"
+#include "file.hpp"
 
 namespace sys {
 
@@ -29,7 +30,7 @@ constexpr size_t __elements_left(size_t bytes)
 }
 
 template <typename T>
-inline size_t read(const File_des& f, T* buf, size_t len = 1)
+size_t read(const File_des& f, T* buf, size_t len = 1)
 {
     auto    cur   = reinterpret_cast<char*>(buf);
     size_t  bytes = len * sizeof(T);
@@ -52,7 +53,7 @@ inline size_t read(const File_des& f, T* buf, size_t len = 1)
 }
 
 template <typename T>
-inline size_t write(const File_des& f, const T* buf, size_t len = 1)
+size_t write(const File_des& f, const T* buf, size_t len = 1)
 {
     auto    cur   = reinterpret_cast<const char *>(buf);
     size_t  bytes = len * sizeof(T);
@@ -90,7 +91,7 @@ inline off_t lseek(const File_des& f, off_t pos = 0, int origin = SEEK_SET)
 #ifdef HAVE_PREADWRITE
 
 template <typename T>
-inline size_t pread(const File_des& f, T* buf, size_t count, off_t pos)
+size_t pread(const File_des& f, T* buf, size_t count, off_t pos)
 {
     auto    cur   = reinterpret_cast<char *>(buf);
     size_t  bytes = count * sizeof(T);
@@ -114,7 +115,7 @@ inline size_t pread(const File_des& f, T* buf, size_t count, off_t pos)
 }
 
 template <typename T>
-inline size_t pwrite(const File_des& f, const T* buf, size_t count, off_t pos)
+size_t pwrite(const File_des& f, const T* buf, size_t count, off_t pos)
 {
     auto    cur   = reinterpret_cast<const char*>(buf);
     size_t  bytes = count * sizeof(T);
