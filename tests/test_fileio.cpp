@@ -131,7 +131,7 @@ TEST_F(File, read)
         static_cast<void>(sys::read(f, &word));
     } catch (const sys::Read_error& ex) {
         cought = true;
-        EXPECT_EQ(ex.errnum(), EBADF);
+        EXPECT_EQ(ex.code(), std::errc::bad_file_descriptor);
     }
     EXPECT_TRUE(cought);
 }
@@ -151,7 +151,7 @@ TEST_F(File, write)
         static_cast<void>(sys::write(f, &word));
     } catch (const sys::Write_error& ex) {
         cought = true;
-        EXPECT_EQ(ex.errnum(), EBADF);
+        EXPECT_EQ(ex.code(), std::errc::bad_file_descriptor);
     }
     EXPECT_TRUE(cought);
 }
@@ -222,7 +222,7 @@ TEST_F(File, lseek)
     try {
         sys::lseek(f, -1, -1);
     } catch (sys::Seek_error &e) {
-        EXPECT_EQ(e.errnum(), EINVAL);
+        EXPECT_EQ(e.code(), std::errc::invalid_argument);
         ++ex_cnt;
     }
     EXPECT_EQ(ex_cnt, 1);
