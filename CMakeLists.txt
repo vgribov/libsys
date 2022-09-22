@@ -4,7 +4,7 @@ include(CheckSymbolExists)
 
 project(libsys VERSION 0.1 LANGUAGES CXX)
 
-option(PACKAGE_TESTS "Build the tests" ON)
+option(LIBSYS_TESTS "Build the tests" OFF)
 
 add_compile_options(-Wall -Wextra -pedantic -Werror)
 
@@ -24,7 +24,7 @@ target_include_directories(sys INTERFACE
 
 target_compile_features(sys INTERFACE cxx_std_17)
 
-if(PACKAGE_TESTS)
+if(LIBSYS_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
