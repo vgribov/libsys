@@ -12,10 +12,27 @@
 
 namespace sys {
 
-class Open_error    : public Error {};
-class Creat_error   : public Error {};
-class Mkstemp_error : public Error {};
-class Close_error   : public Error {};
+/*
+ * Errors
+ */
+
+struct Open_error : public Error
+{
+    explicit Open_error(const char* fn) : file_name{fn} {}
+    const std::string file_name;
+};
+
+struct Mkstemp_error : public Error
+{
+    explicit Mkstemp_error(const char* ts) : tmpl{ts} {}
+    const std::string tmpl;
+};
+
+struct Close_error : public Error {};
+
+/*
+ * File descriptor
+ */
 
 class File_des
 {
@@ -48,6 +65,10 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
                         STDOUT{STDOUT_FILENO},
                         STDERR{STDERR_FILENO};
 
+/*
+ * File
+ */
+
 class File : public File_des
 {
 public:
@@ -63,26 +84,54 @@ public:
     ~File() { if (isValid()) ::close(get()); }
 };
 
-inline File open(const char* name, int flags)
-    { return File{SYS_INV(::open, Open_error, name, flags)}; }
+inline auto open(const char* name, int flags)
+{
+    auto fd = ::open(name, flags);
+    if (fd == -1) throw Open_error{name};
+    return File{fd};
+}
 
-inline File open(const char* name, int flags, mode_t mode)
-    { return File{SYS_INV(::open, Open_error, name, flags, mode)}; }
+inline auto open(const char* name, int flags, mode_t mode)
+{
+    auto fd = ::open(name, flags, mode);
+    if (fd == -1) throw Open_error{name};
+    return File{fd};
+}
 
-inline File creat(const char* name, mode_t mode)
-    { return File{SYS_INV(::creat, Creat_error, name, mode)}; }
+inline auto creat(const char* name, mode_t mode)
+{
+    auto fd = ::creat(name, mode);
+    if (fd == -1) throw Open_error{name};
+    return File{fd};
+}
 
-inline File mkstemp(char *tmpl)
-    { return File{SYS_INV(::mkstemp, Mkstemp_error, tmpl)}; }
+inline auto mkstemp(char *tmpl)
+{
+    auto fd = ::mkstemp(tmpl);
+    if (fd == -1) throw Mkstemp_error{tmpl};
+    return File{fd};
+}
 
-inline File mkostemp(char *tmpl, int flags)
-    { return File{SYS_INV(::mkostemp, Mkstemp_error, tmpl, flags)}; }
+inline auto mkostemp(char *tmpl, int flags)
+{
+    auto fd = ::mkostemp(tmpl, flags);
+    if (fd == -1) throw Mkstemp_error{tmpl};
+    return File{fd};
+}
 
-inline File mkstemps(char *tmpl, int suffixlen)
-    { return File{SYS_INV(::mkstemps, Mkstemp_error, tmpl, suffixlen)}; }
+inline auto mkstemps(char *tmpl, int suffixlen)
+{
+    auto fd = ::mkstemps(tmpl, suffixlen);
+    if (fd == -1) throw Mkstemp_error{tmpl};
+    return File{fd};
+}
 
-inline File mkostemps(char *tmpl, int suffixlen, int flags)
-    { return File{SYS_INV(::mkostemps, Mkstemp_error, tmpl, suffixlen, flags)}; }
+inline auto mkostemps(char *tmpl, int suffixlen, int flags)
+{
+    auto fd = ::mkostemps(tmpl, suffixlen, flags);
+    if (fd == -1) throw Mkstemp_error{tmpl};
+    return File{fd};
+}
 
 } // namespace sys
 
