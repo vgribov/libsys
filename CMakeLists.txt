@@ -18,7 +18,6 @@ configure_file(config.h.in config.h)
 add_library(sys INTERFACE)
 
 target_include_directories(sys INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 

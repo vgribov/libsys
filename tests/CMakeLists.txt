@@ -1,6 +1,7 @@
 include(GoogleTest)
 include("${PROJECT_SOURCE_DIR}/cmake/package_add_test.cmake")
 
+include_directories(${PROJECT_SOURCE_DIR})
 add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" extern/googletest)
 
 # sanitizer configuration
