@@ -9,3 +9,4 @@ set(ASAN_CXX_FLAGS  "-O0;-fsanitize=address;-fno-omit-frame-pointer;-fsanitize-a
 set(ASAN_LINK_FLAGS "-fsanitize=address")
 
 package_add_test_with_libraries(test_fileio test_fileio.cpp sys "${PROJECT_DIR}")
+package_add_test_with_libraries(test_utils  test_utils.cpp  sys "${PROJECT_DIR}")
