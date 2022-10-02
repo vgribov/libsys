@@ -1,35 +1,22 @@
-# From https://cliutils.gitlab.io/modern-cmake/chapters/testing/googletest.html
+function(package_add_test TESTNAME)
+    cmake_parse_arguments(ARG                   # arguments prefix
+                          ""                    # boolean arguments
+                          "WORKDIR"             # single value arguments
+                          "FILES;LIBRARIES"     # multi value arguments
+                          ${ARGN})
 
-macro(package_add_test TESTNAME)
-    # create an exectuable in which the tests will be stored
-    add_executable(${TESTNAME} ${ARGN})
-    # link the Google test infrastructure, mocking library, and a default main
-    # fuction to the test executable.  Remove g_test_main if writing your own
-    # main function.
-    target_link_libraries (${TESTNAME} gtest gmock gtest_main)
-    target_compile_options(${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_CXX_FLAGS}>")
-    target_link_options   (${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_LINK_FLAGS}>")
+    if (NOT DEFINED ARG_WORKDIR)
+        set(ARG_WORKDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    endif()
 
-    # gtest_discover_tests replaces gtest_add_tests,
-    # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more
-    # options to pass to it
-    gtest_discover_tests(${TESTNAME}
-        # set a working directory so your project root so that you can find
-        # test data via paths relative to the project root
-        WORKING_DIRECTORY ${PROJECT_DIR}
-    )
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
-endmacro()
+    add_executable(${TESTNAME} ${ARG_FILES})
 
-macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRECTORY)
-    add_executable(${TESTNAME} ${FILES})
-
-    target_link_libraries (${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
+    target_link_libraries (${TESTNAME} gtest gmock gtest_main ${ARG_LIBRARIES})
     target_compile_options(${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_CXX_FLAGS}>")
     target_link_options   (${TESTNAME} PRIVATE "$<$<CONFIG:Debug>:${ASAN_LINK_FLAGS}>")
 
     gtest_discover_tests(${TESTNAME}
-        WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
-    )
+        WORKING_DIRECTORY ${ARG_WORKDIR})
+
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
-endmacro()
+endfunction()
