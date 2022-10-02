@@ -1,5 +1,5 @@
 " Local vim configuration
 
-set cino=(0,Ws
+set cino=g0,L0,:0,N-s,(0
 
 nnoremap <silent><leader>mr :make! run<cr>
