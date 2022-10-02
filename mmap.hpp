@@ -9,8 +9,6 @@
 
 namespace sys {
 
-struct Mmap_error : public Error {};
-
 struct Mem_map {
     void*  data;
     size_t length;
@@ -20,7 +18,7 @@ inline utils::Ptr<Mem_map>
 mmap(void* addr, size_t length, int prot, int flags, File_des fd, off_t offset)
 {
     void* p = ::mmap(addr, length, prot, flags, fd.get(), offset);
-    if (p == MAP_FAILED) throw Error{};
+    if (p == MAP_FAILED) throw error(__func__);
     auto deleter = [](Mem_map* mm) {
         ::munmap(mm->data, mm->length);
         delete mm;
