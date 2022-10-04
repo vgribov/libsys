@@ -39,7 +39,6 @@ inline void swap(File_des& lhs, File_des& rhs) noexcept {
 }
 
 inline void close(File_des& f) {
-    if (!f.isValid()) return;
     SYS_INV(close, f.get());
     f.des_ = -1;
 }
@@ -61,7 +60,7 @@ public:
     File(File&& f)            noexcept { swap(f); }
     File &operator=(File&& f) noexcept { swap(f); return *this; }
 
-    ~File() { if (isValid()) ::close(get()); }
+    ~File() { ::close(get()); }
 };
 
 inline auto open(const char* name, int flags) {
