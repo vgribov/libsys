@@ -53,14 +53,19 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
 
 class File : public File_des, utils::No_copy {
 public:
-    explicit File()       noexcept {}
+    explicit File()       noexcept : File_des{}   {}
     explicit File(int fd) noexcept : File_des{fd} {}
 
+    File(File&& rhs) noexcept : File{} { swap(rhs); }
 
-    File(File&& f)            noexcept { swap(f); }
-    File &operator=(File&& f) noexcept { swap(f); return *this; }
+    File& operator=(File&& rhs) noexcept {
+        File tmp{};
+        rhs.swap(tmp);
+        swap(tmp);
+        return *this;
+    }
 
-    ~File() { ::close(get()); }
+    ~File() { if (isValid()) ::close(get()); }
 };
 
 inline auto open(const char* name, int flags) {
