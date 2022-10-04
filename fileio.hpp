@@ -194,7 +194,7 @@ inline size_t ppoll(Poll_fd* fds, size_t nfds, const timespec* timeout,
     return SYS_INV(ppoll, fds, nfds, timeout, sigmask);
 }
 
-#endif //HAVE_PPOLL
+#endif // HAVE_PPOLL
 
 } // namespace sys
 

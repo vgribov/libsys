@@ -10,11 +10,23 @@ struct No_copy {
     No_copy& operator=(No_copy&) = delete;
 };
 
-    Ptr()       : Base{nullptr, default_deleter} {}
-    Ptr(T* obj) : Base{obj,     default_deleter} {}
+template <typename T>
+using Dtor = void(*)(T*) noexcept;
+
+template <typename T>
+class Ptr : public std::unique_ptr<T, Dtor<T>> {
+    using Base = std::unique_ptr<T, Dtor<T>>;
+
+public:
+    Ptr(T* obj = nullptr, Dtor<T> dtor = def_dtor)
+        : Base{obj, dtor}
+        { }
 
 private:
-    static void default_deleter(T*t) { delete t; }
+    static void def_dtor(T* t) noexcept {
+        try { delete t; }
+        catch (...) {}
+    }
 };
 
 template <typename T, typename... Args>

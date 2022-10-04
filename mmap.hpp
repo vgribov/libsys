@@ -19,7 +19,7 @@ mmap(void* addr, size_t length, int prot, int flags, File_des fd, off_t offset)
 {
     void* p = ::mmap(addr, length, prot, flags, fd.get(), offset);
     if (p == MAP_FAILED) throw error(__func__);
-    auto deleter = [](Mem_map* mm) {
+    auto deleter = [](Mem_map* mm) noexcept {
         ::munmap(mm->data, mm->length);
         delete mm;
     };
