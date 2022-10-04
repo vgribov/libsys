@@ -4,12 +4,11 @@
 
 namespace sys::utils {
 
-template <typename T, typename F = void(*)(T*)>
-class Ptr : public std::unique_ptr<T, void(*)(T*)> {
-    using Base = std::unique_ptr<T, void(*)(T*)>;
-public:
-    using Base::Base;
-    using Base::operator=;
+struct No_copy {
+    No_copy() {}
+    No_copy(No_copy&)            = delete;
+    No_copy& operator=(No_copy&) = delete;
+};
 
     Ptr()       : Base{nullptr, default_deleter} {}
     Ptr(T* obj) : Base{obj,     default_deleter} {}

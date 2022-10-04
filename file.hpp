@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "error.hpp"
+#include "utils.hpp"
 
 namespace sys {
 
@@ -51,13 +52,11 @@ constexpr sys::File_des STDIN {STDIN_FILENO},
  * File
  */
 
-class File : public File_des {
+class File : public File_des, utils::No_copy {
 public:
     explicit File()       noexcept {}
     explicit File(int fd) noexcept : File_des{fd} {}
 
-    File(File&)            = delete;
-    File& operator=(File&) = delete;
 
     File(File&& f)            noexcept { swap(f); }
     File &operator=(File&& f) noexcept { swap(f); return *this; }
