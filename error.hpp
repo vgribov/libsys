@@ -29,8 +29,7 @@ inline auto error(const T&... args) {
     return Error{serr.str()};
 }
 
-template <typename T>
-inline auto error(const T& msg) {
+inline auto error(const char* msg) {
     return Error{msg};
 }
 
