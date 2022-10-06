@@ -21,6 +21,7 @@ public:
     Ptr(T* obj = nullptr, Dtor<T> dtor = def_dtor)
         : Base{obj, dtor}
         { }
+    operator T*() { return this->get(); }
 
 private:
     static void def_dtor(T* t) noexcept {
